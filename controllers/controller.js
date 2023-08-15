@@ -1,4 +1,5 @@
-const userDb = require('../models/model')
+const userDb = require('../models/model');
+const paginationHelper = require('../utils/paginationHelper');
 
 exports.addUser = async (req, res) => {
     try {
@@ -32,8 +33,12 @@ exports.fetchUser = async (req, res) => {
 
 exports.fetchUsers = async (req, res) => {
     try {
-        const user = await userDb.find()
-        res.send({ message: "success", data: user })
+        const { pageNo, pageSIze } = req.query;
+        const { limit, offset } = paginationHelper.getLimitAndOffset(pageNo, pageSIze)
+        const user = await userDb.find().limit(limit).skip(offset)
+        const count = await userDb.countDocuments();
+        const pagination = await paginationHelper.pagination(pageNo, pageSIze, count)
+        res.send({ message: "success", data: { user: user, pagination: pagination } })
     } catch (error) {
         console.log(error);
         res.send({ message: "failed", error: error })
