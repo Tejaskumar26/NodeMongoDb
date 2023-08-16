@@ -33,10 +33,19 @@ exports.fetchUser = async (req, res) => {
 
 exports.fetchUsers = async (req, res) => {
     try {
-        const { pageNo, pageSIze } = req.query;
+        const { pageNo, pageSIze, search } = req.query;
+        let filter = {};
+        if (search) {
+            filter = {
+                $or: [
+                    { name: { $regex: `${search}`, $options: 'i' } }, // $options: 'i' for Case insensitivity to match upper and lower cases
+                    { email: { $regex: `${search}`, $options: 'i' } }
+                ]
+            }
+        }
         const { limit, offset } = paginationHelper.getLimitAndOffset(pageNo, pageSIze)
-        const user = await userDb.find().limit(limit).skip(offset)
-        const count = await userDb.countDocuments();
+        const user = await userDb.find(filter).limit(limit).skip(offset)
+        const count = await userDb.countDocuments(filter);
         const pagination = await paginationHelper.pagination(pageNo, pageSIze, count)
         res.send({ message: "success", data: { user: user, pagination: pagination } })
     } catch (error) {
