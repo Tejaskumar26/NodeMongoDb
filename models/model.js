@@ -17,7 +17,7 @@ var schema = new mongoose.Schema({
     },
     gender: String,
     status: String
-})
+}, { timestamps: true })
 
 const userDb = mongoose.model('userDb', schema);
 
